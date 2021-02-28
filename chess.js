@@ -1362,7 +1362,30 @@ var Chess = function(fen) {
     },
 
     fen: function() {
-      return generate_fen()
+      const spl = generate_fen().split(' ')
+      spl[4] = '0' // set halfmove clock
+      const enPassant = spl[3]
+      if (enPassant === '-') {
+        return spl.join(' ')
+      }
+      const [file, rank] = enPassant.split('')
+      const files = 'abcdefgh'
+      const fileIdx = files.indexOf(file)
+      if (fileIdx === -1) {
+        throw new Error('not possible')
+      }
+      const newRank = rank === '6' ? 5 : 4
+      const squares = [files[fileIdx - 1], files[fileIdx + 1]]
+        .filter((f) => !!f)
+        .map((s) => `${s}${newRank}`)
+      for (let i = 0; i < squares.length; i++) {
+        const piece = get(squares[i])
+        if (piece !== null && piece.type === 'p' && piece.color === turn) {
+          return spl.join(' ')
+        }
+      }
+      spl[3] = '-'
+      return spl.join(' ')
     },
 
     board: function() {
